@@ -1,0 +1,32 @@
+name: nba-notifier
+
+services:
+  nba-notifier:
+    build: .
+    image: nba-notifier:latest
+    container_name: nba-notifier
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DB_PATH: /data/nba_notifier.db
+    volumes:
+      - notifier-data:/data
+    tmpfs:
+      - /tmp  # heartbeat file lives in RAM, not on the SD card
+    expose:
+      - "8081"  # /nba callback for PiButler on pibutler-net; deliberately not published to the host
+    networks:
+      - pibutler-net
+    mem_limit: 128m
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+volumes:
+  notifier-data:
+
+networks:
+  pibutler-net:
+    external: true  # created by PiButler's compose file; start PiButler first
