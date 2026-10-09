@@ -358,7 +358,7 @@ async def test_crowded_night_puts_two_games_per_row(events):
 
 def first_game_codes(n: int) -> str:
     g = night_games(n)[0]
-    return f"{g.away.code}{DASH}{g.home.code}"
+    return f"{g.away.code} @ {g.home.code}"
 
 
 def test_button_rows():

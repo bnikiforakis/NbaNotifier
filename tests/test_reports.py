@@ -114,7 +114,7 @@ def test_reminder_and_tipoff():
 def test_schedule_labels():
     assert reports.schedule_label(GAME, False) == "☆ {{hm:2026-10-09T12:00:00Z}} Rockets @ Mavericks"
     compact = reports.schedule_label(GAME, True, compact=True)
-    assert compact == f"⭐ {{{{hm:2026-10-09T12:00:00Z}}}} HOU{DASH}DAL"
+    assert compact == "⭐ {{hm:2026-10-09T12:00:00Z}} HOU @ DAL"
     assert reports.schedule_label(replace(GAME, time_valid=False), False) == "☆ TBD Rockets @ Mavericks"
 
 

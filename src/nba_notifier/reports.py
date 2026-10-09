@@ -263,11 +263,11 @@ def daily_schedule(day: date, results_time: time | None = None, quiet: str = "")
 
 
 def schedule_label(game: Game, following: bool, compact: bool = False) -> str:
-    """``☆ {{hm}} Celtics @ Lakers``, or ``☆ {{hm}} BOS-LAL`` for two buttons per row."""
+    """``☆ {{hm}} Celtics @ Lakers``, or ``☆ {{hm}} BOS @ LAL`` for two buttons per row."""
     star = "⭐" if following else "☆"
     when = f"{{{{hm:{iso_z(game.tipoff)}}}}}" if game.time_valid else "TBD"
     if compact:
-        return f"{star} {when} {game.away.code}{DASH}{game.home.code}"
+        return f"{star} {when} {game.away.code} @ {game.home.code}"
     return f"{star} {when} {game.away.short_name} @ {game.home.short_name}"
 
 

@@ -159,7 +159,7 @@ async def test_list_with_more_than_twelve_games_goes_two_per_row():
     names = labels(reply)
     assert len(names) == 15
     assert f"🔴 {LIVE.away.code} 64{DASH}70 {LIVE.home.code}" in names
-    assert any(n.startswith("⏳ ") and n.endswith(f"{PRE.away.code}{DASH}{PRE.home.code}") for n in names)
+    assert any(n.startswith("⏳ ") and n.endswith(f"{PRE.away.code} @ {PRE.home.code}") for n in names)
 
 
 async def test_list_without_games():

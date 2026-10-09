@@ -165,7 +165,7 @@ class Scoreboard:
 
     def _label(self, game: Game, compact: bool) -> str:
         status = game.status
-        names = f"{game.away.code}{reports.DASH}{game.home.code}" if compact else reports.title(game)
+        names = f"{game.away.code} @ {game.home.code}" if compact else reports.title(game)
         if status.live:
             score = _code_score(game) if compact else reports.plain_score(game, *game.score)
             return _fit("🔴 ", score if compact else f"{score} · {clock(status)}")
