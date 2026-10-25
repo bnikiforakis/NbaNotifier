@@ -4,6 +4,7 @@ Same model as EuroleagueNotifier (its ADR-014/016/017), on NBA time:
 - a "night" is one US game day (Eastern date), which is what ESPN's scoreboard groups by;
 - everyone, silently: tonight's schedule at SCHEDULE_TIME (one Follow button per game) and last
   night's results at RESULTS_TIME (one 📊 button per game). Nothing else about unfollowed games;
+- a team's followers, silently: its games of the week, Mondays at WEEKLY_TIME (``weekly``);
 - followers of a game (pressed Follow, or auto-follow by favourite team): a reminder before
   tip-off, the tip-off, a score card after every quarter and the final card. These ring, except
   during the quiet hours (most NBA games are played at night in Europe).
@@ -18,11 +19,11 @@ import logging
 import math
 from collections.abc import Awaitable, Callable
 from dataclasses import replace
-from datetime import UTC, date, datetime, timedelta
+from datetime import UTC, date, datetime, time, timedelta
 from html import escape
 from zoneinfo import ZoneInfo
 
-from nba_notifier import reports
+from nba_notifier import reports, weekly
 from nba_notifier.api import ApiError, EspnClient
 from nba_notifier.butler import ButlerClient, ButlerError
 from nba_notifier.cache import TtlCache
@@ -36,6 +37,7 @@ US_EASTERN = ZoneInfo("America/New_York")
 KINDS = [
     {"value": "schedule", "label": "Tonight's schedule"},
     {"value": "results", "label": "Last night's results"},
+    {"value": "weekly", "label": "Weekly team schedule"},
 ]
 COMMANDS = [{"command": "nba", "description": "Live NBA scores"}]
 RESULTS_WINDOW = timedelta(hours=6)  # after RESULTS_TIME; later than that the summary is stale
@@ -248,6 +250,10 @@ class Notifier:
                 )
                 self._tasks[gid] = asyncio.create_task(self.track(game), name=gid)
                 self._tracked[gid] = game
+        try:  # last: a slow ESPN mustn't hold up the game tasks
+            await self.maybe_send_weekly()
+        except Exception:
+            log.exception("weekly schedules failed")
 
     async def refresh_schedule(self) -> None:
         """Load last night, today and tomorrow (US game days): results, schedule and lookahead."""
@@ -368,6 +374,47 @@ class Notifier:
             silent=True,
         )
         self._result_boxes.pop(key, None)
+
+    # --- weekly team schedules (ADR-N4) -------------------------------------------------------
+
+    async def maybe_send_weekly(self) -> None:
+        """Mondays from WEEKLY_TIME: one silent message per team with its games of the week, to
+        the team's followers. Retried every tick until every team is sent (ESPN down or empty, a
+        rejected send); stale after Monday."""
+        local_now = self.now().astimezone(self.tz)
+        if local_now.weekday() != 0 or local_now.time() < self.settings.weekly_time:
+            return
+        monday = local_now.date()  # the week's first US game day: Monday's games start this evening
+        if await self.events.has(f"weekly:{monday.isoformat()}"):
+            return
+        boards = await asyncio.gather(*(self.espn.scoreboard(d) for d in weekly.days(monday)))
+        weeks = weekly.team_weeks(g for board in boards for g in board)
+        if not weeks:
+            return  # an empty week is more likely a bad answer than no games at all: ask again
+        ends = datetime.combine(monday + timedelta(days=1), time(0), self.tz)
+        failed = []
+        for code, (team, fixtures) in sorted(weeks.items(), key=lambda item: item[1][0].short_name):
+            key = f"weekly:{monday.isoformat()}:{code}"
+            if await self.events.has(key):
+                continue
+            week_topic = weekly.topic(team, monday)
+            try:
+                await self._send(
+                    key,
+                    weekly.message(team, fixtures),
+                    tags={"daily": ["weekly"]},
+                    expires_at=reports.iso_z(ends),
+                    topics=[week_topic],
+                    audience={"topic": week_topic["id"], "following": True},
+                    silent=True,
+                )
+            except ButlerError as exc:  # the other teams still go out
+                failed.append(code)
+                log.warning("%s failed: %s", key, exc)
+        if failed:
+            return
+        await self.events.add(f"weekly:{monday.isoformat()}")
+        log.info("weekly schedules sent for %d teams", len(weeks))
 
     # --- per-game tracking -------------------------------------------------------------------
 

@@ -14,6 +14,8 @@ NBA sibling of [EuroleagueNotifier](https://github.com/bnikiforakis/EuroleagueNo
 - **Followed games:** a reminder before tip-off, the tip-off, a score card after every quarter, and
   the final, each with 📊 for the full stats. Between 00:00 and 09:00 they arrive silently.
 - **Last night's results** at 11:00: one message with a 📊 box score per game.
+- **Weekly team schedule** on Mondays at 13:00: one message per auto-followed team with its games
+  from Monday to Sunday (US game days).
 - **`/nba`**: live scores of tonight's games, on demand.
 
 Data comes from ESPN's public NBA scoreboard and game summaries. One scoreboard request covers a

@@ -17,6 +17,7 @@ class Settings:
     timezone: str = "Europe/Athens"  # the daily messages and quiet hours follow this clock
     schedule_time: time = time(17, 0)  # tonight's games (the US game day starting this evening)
     results_time: time = time(11, 0)  # last night's results
+    weekly_time: time = time(13, 0)  # Mondays: each followed team's games of the week (ADR-N4)
     quiet_start: time = time(0, 0)  # followers' messages are silent from here...
     quiet_end: time = time(9, 0)  # ...until here
     db_path: str = "/data/nba_notifier.db"
@@ -48,6 +49,7 @@ def load_settings(env: dict[str, str] | None = None) -> Settings:
         timezone=env.get("TIMEZONE", "Europe/Athens"),
         schedule_time=time.fromisoformat(env.get("SCHEDULE_TIME", "17:00")),
         results_time=time.fromisoformat(env.get("RESULTS_TIME", "11:00")),
+        weekly_time=time.fromisoformat(env.get("WEEKLY_TIME", "13:00")),
         quiet_start=time.fromisoformat(env.get("QUIET_START", "00:00")),
         quiet_end=time.fromisoformat(env.get("QUIET_END", "09:00")),
         db_path=env.get("DB_PATH", "/data/nba_notifier.db"),

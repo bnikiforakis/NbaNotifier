@@ -242,7 +242,8 @@ def final_score(game: Game, box: BoxScore) -> str:
     return f"🏁 <b>Final</b>{ot_suffix(len(box.quarter_scores))} · {score}"
 
 
-def _night(day: date) -> str:
+def short_day(day: date) -> str:
+    """``Wed 21 Oct``."""
     return f"{day:%a} {day.day} {day:%b}"
 
 
@@ -259,7 +260,7 @@ def daily_schedule(day: date, results_time: time | None = None, quiet: str = "")
     )
     results = f"All results arrive at {results_time:%H:%M}." if results_time else ""
     body = " ".join(part for part in (intro, quiet, results) if part)
-    return f"📅 <b>Tonight's NBA games</b> · {_night(day)} (US)\n\n{body}"
+    return f"📅 <b>Tonight's NBA games</b> · {short_day(day)} (US)\n\n{body}"
 
 
 def schedule_label(game: Game, following: bool, compact: bool = False) -> str:
@@ -273,7 +274,7 @@ def schedule_label(game: Game, following: bool, compact: bool = False) -> str:
 
 def daily_results(day: date, missing: int = 0) -> str:
     """Header of the results of the US game day ``day``. The games are its 📊 buttons."""
-    text = f"🏁 <b>NBA results</b> · night of {_night(day)} (US)\n\nTap a game for its box score."
+    text = f"🏁 <b>NBA results</b> · night of {short_day(day)} (US)\n\nTap a game for its box score."
     if missing:
         text += f"\n\n⚠️ {missing} result{'s' if missing > 1 else ''} not available yet: see /nba."
     return text
