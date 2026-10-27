@@ -143,7 +143,7 @@ async def test_list_shows_tonights_games_one_per_row():
     assert names[0] == "⏳ {{hm:2026-10-21T23:00:00Z}} Hawks @ Magic"
     live = next(n for n in names if n.startswith("🔴"))
     assert live == f"🔴 {LIVE.away.short_name} 64{DASH}70 {LIVE.home.short_name} · Q3 5:12"
-    assert f"✅ {FINAL.away.short_name} 110{DASH}101 {FINAL.home.short_name}" in names
+    assert f"🏆 {FINAL.away.short_name} 110{DASH}101 {FINAL.home.short_name}" in names
     assert any(n.startswith("🚫 ") for n in names)
     assert all(a.startswith("g|") and ACTION_RE.match(a) for a in actions(reply))
     assert all(len(n) <= 64 for n in names)
@@ -214,13 +214,13 @@ async def test_game_view_live():
 async def test_game_view_final():
     reply = await post(FakeNotifier({NIGHT: TONIGHT}), action(f"g|{FINAL.id}"))
     away, home = FINAL.away.short_name, FINAL.home.short_name
-    assert reply["text"].startswith(f"✅ <b>Final</b> · <b>{away}</b> 110{DASH}101 {home}")
+    assert reply["text"].startswith(f"🏁 <b>Final</b> · <b>{away}</b> 110{DASH}101 {home}")
 
 
 async def test_game_view_final_in_overtime():
     ot = replace(FINAL, quarter_scores=[*FINAL.quarter_scores, (10, 5)])
     reply = await post(FakeNotifier({NIGHT: [ot]}), action(f"g|{FINAL.id}"))
-    assert reply["text"].startswith("✅ <b>Final</b> (OT)")
+    assert reply["text"].startswith("🏁 <b>Final</b> (OT)")
     assert "OT1" in reply["text"]
 
 
@@ -235,7 +235,7 @@ async def test_game_from_another_day_is_found_through_the_schedule():
     other = replace(FINAL, id="999", day=date(2026, 10, 20))
     notifier = FakeNotifier({NIGHT: TONIGHT, other.day: [other]}, games=[other])
     reply = await post(notifier, action("g|999"))
-    assert reply["text"].startswith("✅ <b>Final</b>")
+    assert reply["text"].startswith("🏁 <b>Final</b>")
 
 
 async def test_game_no_longer_on_the_scoreboard():

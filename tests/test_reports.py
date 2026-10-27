@@ -136,9 +136,15 @@ def test_daily_results():
 
 
 def test_result_labels():
-    assert reports.result_label(GAME, FINAL) == f"✅ Rockets 110{DASH}100 Mavericks"
+    assert reports.result_label(GAME, FINAL) == f"🏆 Rockets 110{DASH}100 Mavericks"
     ot = replace(FINAL, quarter_scores=[*FINAL.quarter_scores, (5, 3)])
-    assert reports.result_label(GAME, ot, compact=True) == f"HOU 110{DASH}100 DAL (OT)"
+    assert reports.result_label(GAME, ot, compact=True) == f"🏆 HOU 110{DASH}100 DAL (OT)"
+
+
+def test_trophy_goes_on_the_winners_side():
+    assert reports.result_score(GAME, 112, 108) == f"Rockets 108{DASH}112 Mavericks 🏆"  # home wins
+    assert reports.result_score(GAME, 108, 112, compact=True) == f"🏆 HOU 112{DASH}108 DAL"
+    assert reports.result_score(GAME, 90, 90) == f"Rockets 90{DASH}90 Mavericks"
 
 
 def test_names_are_escaped():

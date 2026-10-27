@@ -138,7 +138,7 @@ class Scoreboard:
             lines = [f"🔴 {reports.score_line(game, home, away, bold_both=True)}", clock(status)]
         else:
             score = reports.score_line(game, home, away, bold_winner=True)
-            lines = [f"✅ <b>Final</b>{reports.ot_suffix(len(game.quarter_scores))} · {score}"]
+            lines = [f"🏁 <b>Final</b>{reports.ot_suffix(len(game.quarter_scores))} · {score}"]
         if game.quarter_scores:
             lines += ["", reports.periods_line(game.quarter_scores)]
         return Reply("\n".join(lines), [[stats, refresh], [BACK]])
@@ -170,7 +170,7 @@ class Scoreboard:
             score = _code_score(game) if compact else reports.plain_score(game, *game.score)
             return _fit("🔴 ", score if compact else f"{score} · {clock(status)}")
         if status.completed:
-            return _fit("✅ ", _code_score(game) if compact else reports.plain_score(game, *game.score))
+            return _fit("", reports.result_score(game, *game.score, compact))
         if status.cancelled:
             return _fit("🚫 ", names)
         when = f"{{{{hm:{reports.iso_z(game.tipoff)}}}}} " if game.time_valid else "TBD "

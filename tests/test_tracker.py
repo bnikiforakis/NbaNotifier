@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import re
 from dataclasses import replace
 from datetime import UTC, date, datetime, time, timedelta
 from pathlib import Path
@@ -450,7 +451,7 @@ async def test_results_at_eleven_cover_last_us_night(events):
     assert msg["silent"] and msg["tags"] == {"daily": ["results"]}
     assert "NBA results</b> · night of Wed 21 Oct (US)" in msg["text"]
     assert len(msg["buttons"]) == 3 and "<pre>" in msg["buttons"][0][0]["reveal"]
-    assert msg["buttons"][0][0]["label"].startswith("✅ ")
+    assert "🏆" in msg["buttons"][0][0]["label"]
 
 
 async def test_no_results_before_eleven(events):
@@ -493,7 +494,7 @@ async def test_crowded_results_use_compact_labels(events):
     _, butler, _, _ = await results_at(events, night_games(13), ATHENS_1100)
     rows = butler.get("results:2026-10-21")["buttons"]
     assert [len(r) for r in rows] == [2] * 6 + [1]
-    assert not rows[0][0]["label"].startswith("✅")
+    assert re.fullmatch(rf"(🏆 )?[A-Z]{{2,4}} \d+{DASH}\d+ [A-Z]{{2,4}}( 🏆)?", rows[0][0]["label"])
 
 
 # --- game days ---------------------------------------------------------------------------------

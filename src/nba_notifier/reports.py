@@ -123,6 +123,19 @@ def plain_score(game: Game, home_score: int, away_score: int) -> str:
     return f"{game.away.short_name} {away_score}{DASH}{home_score} {game.home.short_name}"
 
 
+def result_score(game: Game, home_score: int, away_score: int, compact: bool = False) -> str:
+    """Final score with 🏆 on the winner's side: ``🏆 Celtics 112-108 Lakers``, ``BOS 108-112 LAL 🏆``.
+
+    For button labels, which can't be bold."""
+    if compact:
+        score = f"{game.away.code} {away_score}{DASH}{home_score} {game.home.code}"
+    else:
+        score = plain_score(game, home_score, away_score)
+    if away_score > home_score:
+        return f"🏆 {score}"
+    return f"{score} 🏆" if home_score > away_score else score
+
+
 def box_sections(game: Game, box: BoxScore, scores: list[tuple[int, int]], stats: list[StatRow]) -> list[str]:
     """Period table, top scorers and team stats, as message lines."""
     return [
@@ -281,8 +294,6 @@ def daily_results(day: date, missing: int = 0) -> str:
 
 
 def result_label(game: Game, box: BoxScore, compact: bool = False) -> str:
-    """Button label such as ``✅ Celtics 108-112 Lakers (OT)``, or ``BOS 108-112 LAL`` compact."""
-    ot = ot_suffix(len(box.quarter_scores))
-    if compact:
-        return f"{game.away.code} {box.away.points}{DASH}{box.home.points} {game.home.code}{ot}"
-    return f"✅ {plain_score(game, box.home.points, box.away.points)}{ot}"
+    """Button label such as ``Celtics 108-112 Lakers 🏆 (OT)``, or ``BOS 108-112 LAL 🏆`` compact."""
+    score = result_score(game, box.home.points, box.away.points, compact)
+    return f"{score}{ot_suffix(len(box.quarter_scores))}"
